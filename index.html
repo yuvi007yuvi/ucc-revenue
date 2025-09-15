@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +25,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -46,7 +47,7 @@
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .header p {
@@ -119,7 +120,7 @@
             padding: 25px;
             border-radius: 15px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
         }
 
@@ -149,7 +150,7 @@
             background: white;
             border-radius: 15px;
             padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             border: 1px solid #e9ecef;
         }
 
@@ -178,18 +179,20 @@
             background: white;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             border: 2px solid #e9ecef;
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #e9ecef;
             border-right: 1px solid #e9ecef;
         }
 
-        th:last-child, td:last-child {
+        th:last-child,
+        td:last-child {
             border-right: none;
         }
 
@@ -219,7 +222,7 @@
 
         .summary-section h3 {
             color: rgb(20, 20, 20);
-            border-bottom: 2px solid rgba(255,255,255,0.3);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
             margin-bottom: 20px;
         }
 
@@ -261,13 +264,14 @@
             .analysis-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .metrics-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -281,7 +285,8 @@
                 <h3>📁 Upload Your Daily Charge Collection CSV</h3>
                 <p>Drag and drop your CSV file here or click to browse</p>
                 <input type="file" id="fileInput" class="file-input" accept=".csv" />
-                <button class="upload-button" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">
+                <button class="upload-button"
+                    onclick="event.stopPropagation(); document.getElementById('fileInput').click()">
                     Choose File
                 </button>
             </div>
@@ -348,7 +353,7 @@
             const lines = text.split('\n');
             const headers = parseCSVLine(lines[0]);
             const data = [];
-            
+
             for (let i = 1; i < lines.length; i++) {
                 if (lines[i].trim()) {
                     const values = parseCSVLine(lines[i]);
@@ -368,10 +373,10 @@
             const result = [];
             let current = '';
             let inQuotes = false;
-            
+
             for (let i = 0; i < line.length; i++) {
                 const char = line[i];
-                
+
                 if (char === '"') {
                     inQuotes = !inQuotes;
                 } else if (char === ',' && !inQuotes) {
@@ -398,7 +403,7 @@
                 try {
                     csvData = parseCSV(e.target.result);
                     console.log('Parsed CSV data:', csvData);
-                    
+
                     if (csvData.length === 0) {
                         throw new Error('No data found in CSV file');
                     }
@@ -406,10 +411,10 @@
                     processData();
                     generateDashboard();
                     dashboard.style.display = 'block';
-                    
+
                     // Hide upload section after successful upload
                     document.querySelector('.upload-section').style.display = 'none';
-                    
+
                     fileInfo.innerHTML = `<p class="success">Successfully loaded ${csvData.length} records from ${file.name}</p>`;
                 } catch (error) {
                     console.error('Error processing file:', error);
@@ -421,7 +426,7 @@
 
         function processData() {
             console.log('Processing data...');
-            
+
             // Reset processed data
             processedData = {
                 totalAmount: 0,
@@ -430,6 +435,7 @@
                 zones: {},
                 wards: {},
                 supervisors: {},
+                supervisorPaymentModes: {}, // New: Track payment modes per supervisor
                 propertyTypes: {},
                 propertySubTypes: {},
                 anomalies: [],
@@ -467,7 +473,7 @@
                 }
                 processedData.wards[ward].count++;
                 processedData.wards[ward].amount += amount;
-                
+
                 // Track active wards
                 if (ward !== 'Unknown') {
                     processedData.activeWards.add(ward);
@@ -480,6 +486,16 @@
                 }
                 processedData.supervisors[supervisor].count++;
                 processedData.supervisors[supervisor].amount += amount;
+
+                // Supervisor Payment Mode analysis (New)
+                if (!processedData.supervisorPaymentModes[supervisor]) {
+                    processedData.supervisorPaymentModes[supervisor] = {};
+                }
+                if (!processedData.supervisorPaymentModes[supervisor][paymentMode]) {
+                    processedData.supervisorPaymentModes[supervisor][paymentMode] = { count: 0, amount: 0 };
+                }
+                processedData.supervisorPaymentModes[supervisor][paymentMode].count++;
+                processedData.supervisorPaymentModes[supervisor][paymentMode].amount += amount;
 
                 // Property Type analysis
                 const propertyType = row['Property Type Name'] || 'Unknown';
@@ -520,14 +536,14 @@
                 '61-Chaubia para', '62-Mathura Darwaza', '63-Maliyaan Sadar', '64-Ghati Bahalray', '65-Holi Gali',
                 '66-Keshighat', '67-Kemar Van', '68-Shanti Nagar', '69-Ratan Chhatri', '70-Biharipur'
             ];
-            
+
             processedData.inactiveWards = allWardNames.filter(wardName => {
                 // Check if this ward name appears in the active wards
                 // We need to check both the full name and just the number part
                 const wardNumber = wardName.split('-')[0];
                 return !processedData.activeWards.has(wardNumber) && !processedData.activeWards.has(wardName);
             });
-            
+
             console.log('Processed data:', processedData);
             console.log('Active wards:', Array.from(processedData.activeWards));
             console.log('Inactive wards:', processedData.inactiveWards);
@@ -539,16 +555,17 @@
             generateLocationAnalysis();
             generatePropertyTypeAnalysis();
             generateSupervisorAnalysis();
+            generateSupervisorPaymentModeAnalysis(); // New function
             generateExecutiveSummary();
         }
 
         function generateMetrics() {
             const metricsGrid = document.getElementById('metricsGrid');
-            
+
             const metrics = [
                 {
                     label: 'Total Amount Collected',
-                    value: `₹${processedData.totalAmount.toLocaleString('en-IN', {maximumFractionDigits: 0})}`,
+                    value: `₹${processedData.totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
                     gradient: 'linear-gradient(135deg, #27ae60, #2ecc71)'
                 },
                 {
@@ -578,7 +595,7 @@
 
         function generatePaymentModeAnalysis() {
             const analysisGrid = document.getElementById('analysisGrid');
-            
+
             // Payment mode table
             const paymentModeData = Object.entries(processedData.paymentModes)
                 .map(([mode, data]) => ({
@@ -597,11 +614,11 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                             <div>
                                 <strong style="color: #2c3e50; font-size: 1.1em;">Report Date:</strong> 
-                                <span style="color: #3498db; font-weight: bold;">${new Date().toLocaleDateString('en-IN', { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: 'numeric' 
-                                })}</span>
+                                <span style="color: #3498db; font-weight: bold;">${new Date().toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}</span>
                             </div>
                             <div>
                                 <strong style="color: #2c3e50; font-size: 1.1em;">Total Collections:</strong> 
@@ -678,7 +695,7 @@
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: function(context) {
+                                    label: function (context) {
                                         const value = context.parsed;
                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                         const percentage = ((value / total) * 100).toFixed(1);
@@ -862,7 +879,7 @@
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: function(value) {
+                                    callback: function (value) {
                                         return '₹' + value.toLocaleString('en-IN');
                                     }
                                 }
@@ -937,19 +954,19 @@
                             </thead>
                             <tbody>
                                 ${propertySubTypeData.map((item, index) => {
-                                    let performanceIcon;
-                                    let performanceColor;
-                                    if (index < 3) {
-                                        performanceIcon = '🏆 Top';
-                                        performanceColor = '#27ae60';
-                                    } else if (index < 7) {
-                                        performanceIcon = '⭐ Good';
-                                        performanceColor = '#f39c12';
-                                    } else {
-                                        performanceIcon = '📊 Average';
-                                        performanceColor = '#3498db';
-                                    }
-                                    return `
+                let performanceIcon;
+                let performanceColor;
+                if (index < 3) {
+                    performanceIcon = '🏆 Top';
+                    performanceColor = '#27ae60';
+                } else if (index < 7) {
+                    performanceIcon = '⭐ Good';
+                    performanceColor = '#f39c12';
+                } else {
+                    performanceIcon = '📊 Average';
+                    performanceColor = '#3498db';
+                }
+                return `
                                         <tr>
                                             <td style="font-weight: bold; color: #3498db;">${index + 1}</td>
                                             <td style="font-size: 0.9em;">${item.subType}</td>
@@ -959,7 +976,7 @@
                                             <td style="color: ${performanceColor}; font-weight: bold;">${performanceIcon}</td>
                                         </tr>
                                     `;
-                                }).join('')}
+            }).join('')}
                             </tbody>
                         </table>
                     </div>
@@ -971,8 +988,8 @@
 
         function generateSupervisorAnalysis() {
             const supervisorData = Object.entries(processedData.supervisors)
-                .map(([supervisor, data]) => ({ 
-                    supervisor, 
+                .map(([supervisor, data]) => ({
+                    supervisor,
                     ...data,
                     efficiency: (data.amount / data.count) || 0
                 }))
@@ -995,20 +1012,20 @@
                             </thead>
                             <tbody>
                                 ${supervisorData.map((supervisor, index) => {
-                                    let rating;
-                                    let ratingColor;
-                                    if (index < 3) {
-                                        rating = '⭐ Top Performer';
-                                        ratingColor = '#27ae60';
-                                    } else if (index < supervisorData.length - 3) {
-                                        rating = '✅ Average';
-                                        ratingColor = '#f39c12';
-                                    } else {
-                                        rating = '⚠️ Needs Improvement';
-                                        ratingColor = '#e74c3c';
-                                    }
-                                    
-                                    return `
+                let rating;
+                let ratingColor;
+                if (index < 3) {
+                    rating = '⭐ Top Performer';
+                    ratingColor = '#27ae60';
+                } else if (index < supervisorData.length - 3) {
+                    rating = '✅ Average';
+                    ratingColor = '#f39c12';
+                } else {
+                    rating = '⚠️ Needs Improvement';
+                    ratingColor = '#e74c3c';
+                }
+
+                return `
                                         <tr>
                                             <td style="font-weight: bold; color: #3498db;">${index + 1}</td>
                                             <td>${supervisor.supervisor}</td>
@@ -1018,7 +1035,7 @@
                                             <td style="color: ${ratingColor}; font-weight: bold;">${rating}</td>
                                         </tr>
                                     `;
-                                }).join('')}
+            }).join('')}
                             </tbody>
                         </table>
                     </div>
@@ -1028,25 +1045,259 @@
             document.getElementById('analysisGrid').innerHTML += supervisorAnalysis;
         }
 
+        function generateSupervisorPaymentModeAnalysis() {
+            const analysisGrid = document.getElementById('analysisGrid');
+            
+            // Get all supervisors and their payment mode data
+            const supervisorData = Object.entries(processedData.supervisorPaymentModes)
+                .map(([supervisor, paymentModes]) => {
+                    const totalAmount = Object.values(paymentModes).reduce((sum, mode) => sum + mode.amount, 0);
+                    return {
+                        supervisor,
+                        paymentModes,
+                        totalAmount,
+                        totalCount: Object.values(paymentModes).reduce((sum, mode) => sum + mode.count, 0)
+                    };
+                })
+                .filter(data => data.supervisor !== 'Unknown') // Filter out unknown supervisors
+                .sort((a, b) => b.totalAmount - a.totalAmount); // Sort by total amount
+
+            // Get all unique payment modes for consistent table structure
+            const allPaymentModes = [...new Set(
+                Object.values(processedData.supervisorPaymentModes)
+                    .flatMap(supervisor => Object.keys(supervisor))
+            )].sort();
+
+            const supervisorPaymentModeAnalysis = `
+                <div class="analysis-card" style="grid-column: 1 / -1;">
+                    <h3>💳👥 Supervisor-wise Payment Mode Analysis</h3>
+                    <div style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 20px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <span style="font-size: 2em; margin-right: 15px;">📊</span>
+                            <div>
+                                <h4 style="margin: 0; font-size: 1.4em;">Payment Mode Distribution by Supervisor</h4>
+                                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 1em;">Analyze collection efficiency across different payment channels for each supervisor</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; margin-bottom: 5px;">${supervisorData.length}</div>
+                                <div style="font-size: 0.95em; opacity: 0.9;">Active Supervisors</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; margin-bottom: 5px;">${allPaymentModes.length}</div>
+                                <div style="font-size: 0.95em; opacity: 0.9;">Payment Modes</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; margin-bottom: 5px;">₹${supervisorData.reduce((sum, s) => sum + s.totalAmount, 0).toLocaleString('en-IN')}</div>
+                                <div style="font-size: 0.95em; opacity: 0.9;">Total Collections</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; margin-bottom: 5px;">${supervisorData.reduce((sum, s) => sum + s.totalCount, 0).toLocaleString('en-IN')}</div>
+                                <div style="font-size: 0.95em; opacity: 0.9;">Total Transactions</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-container" style="overflow-x: auto;">
+                        <table style="min-width: 800px;">
+                            <thead>
+                                <tr>
+                                    <th style="position: sticky; left: 0; background: #34495e; z-index: 10; min-width: 200px;">Supervisor Name</th>
+                                    <th>Total Amount (₹)</th>
+                                    <th>Total Count</th>
+                                    ${allPaymentModes.map(mode => `<th>${mode} Amount (₹)</th><th>${mode} Count</th>`).join('')}
+                                    <th>Efficiency Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${supervisorData.map((supervisor, index) => {
+                                    // Calculate efficiency rating
+                                    let rating, ratingColor;
+                                    const avgPerTransaction = supervisor.totalAmount / supervisor.totalCount;
+                                    const overallAvg = processedData.totalAmount / processedData.totalTransactions;
+                                    
+                                    if (avgPerTransaction >= overallAvg * 1.2) {
+                                        rating = '⭐ Excellent';
+                                        ratingColor = '#27ae60';
+                                    } else if (avgPerTransaction >= overallAvg) {
+                                        rating = '✅ Good';
+                                        ratingColor = '#2ecc71';
+                                    } else if (avgPerTransaction >= overallAvg * 0.8) {
+                                        rating = '📊 Average';
+                                        ratingColor = '#f39c12';
+                                    } else {
+                                        rating = '⚠️ Needs Support';
+                                        ratingColor = '#e74c3c';
+                                    }
+
+                                    // Find dominant payment mode for this supervisor
+                                    const dominantMode = Object.entries(supervisor.paymentModes)
+                                        .sort((a, b) => b[1].amount - a[1].amount)[0];
+                                    
+                                    return `
+                                        <tr style="${index % 2 === 0 ? 'background: #f8f9fa;' : ''}">
+                                            <td style="position: sticky; left: 0; background: ${index % 2 === 0 ? '#f8f9fa' : 'white'}; z-index: 5; font-weight: bold; color: #2c3e50; min-width: 200px; padding: 12px 8px;">
+                                                ${supervisor.supervisor}
+                                                <div style="font-size: 0.8em; color: #7f8c8d; margin-top: 4px;">
+                                                    Prefers: <strong style="color: #3498db;">${dominantMode ? dominantMode[0] : 'N/A'}</strong>
+                                                    ${dominantMode ? `(₹${dominantMode[1].amount.toLocaleString('en-IN')})` : ''}
+                                                </div>
+                                            </td>
+                                            <td style="font-weight: bold; color: #27ae60;">₹${supervisor.totalAmount.toLocaleString('en-IN')}</td>
+                                            <td style="font-weight: bold; color: #3498db;">${supervisor.totalCount.toLocaleString('en-IN')}</td>
+                                            ${allPaymentModes.map(mode => {
+                                                const modeData = supervisor.paymentModes[mode] || { amount: 0, count: 0 };
+                                                const isTop = dominantMode && dominantMode[0] === mode;
+                                                return `
+                                                    <td style="${isTop ? 'background: #e8f5e8; font-weight: bold;' : ''}">₹${modeData.amount.toLocaleString('en-IN')}</td>
+                                                    <td style="${isTop ? 'background: #e8f5e8; font-weight: bold;' : ''}">${modeData.count.toLocaleString('en-IN')}</td>
+                                                `;
+                                            }).join('')}
+                                            <td style="color: ${ratingColor}; font-weight: bold; text-align: center;">${rating}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Payment Mode Insights Section -->
+                    <div style="margin-top: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        ${allPaymentModes.map(mode => {
+                            const modeStats = supervisorData.map(s => {
+                                const data = s.paymentModes[mode] || { amount: 0, count: 0 };
+                                return { supervisor: s.supervisor, ...data };
+                            }).filter(s => s.amount > 0).sort((a, b) => b.amount - a.amount);
+                            
+                            const totalModeAmount = modeStats.reduce((sum, s) => sum + s.amount, 0);
+                            const totalModeCount = modeStats.reduce((sum, s) => sum + s.count, 0);
+                            const topPerformer = modeStats[0];
+                            
+                            return `
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; border-left: 4px solid ${mode === 'CASH' ? '#27ae60' : mode === 'UPI' ? '#3498db' : '#e67e22'};">
+                                    <h5 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 1.2em; display: flex; align-items: center;">
+                                        <span style="font-size: 1.5em; margin-right: 10px;">${mode === 'CASH' ? '💵' : mode === 'UPI' ? '📱' : '💳'}</span>
+                                        ${mode} Performance
+                                    </h5>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                            <span>Total Amount:</span>
+                                            <strong style="color: #27ae60;">₹${totalModeAmount.toLocaleString('en-IN')}</strong>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                            <span>Total Transactions:</span>
+                                            <strong style="color: #3498db;">${totalModeCount.toLocaleString('en-IN')}</strong>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                            <span>Active Supervisors:</span>
+                                            <strong style="color: #9b59b6;">${modeStats.length}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    ${topPerformer ? `
+                                        <div style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+                                            <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">🏆 Top Performer</div>
+                                            <div style="font-weight: bold; color: #2c3e50;">${topPerformer.supervisor}</div>
+                                            <div style="font-size: 0.9em; color: #27ae60; margin-top: 2px;">₹${topPerformer.amount.toLocaleString('en-IN')} (${topPerformer.count} transactions)</div>
+                                        </div>
+                                    ` : `
+                                        <div style="background: #fff3cd; padding: 12px; border-radius: 8px; border: 1px solid #ffeaa7; color: #856404;">
+                                            <div style="font-size: 0.9em;">⚠️ No collections in this mode</div>
+                                        </div>
+                                    `}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <!-- Action Items Section -->
+                    ${(() => {
+                        const lowPerformers = supervisorData.filter(s => {
+                            const avgPerTransaction = s.totalAmount / s.totalCount;
+                            const overallAvg = processedData.totalAmount / processedData.totalTransactions;
+                            return avgPerTransaction < overallAvg * 0.8;
+                        });
+                        
+                        const cashOnlySupers = supervisorData.filter(s => {
+                            const modes = Object.keys(s.paymentModes);
+                            return modes.length === 1 && modes[0] === 'CASH';
+                        });
+                        
+                        return `
+                            <div style="margin-top: 25px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);">
+                                <h5 style="margin: 0 0 15px 0; font-size: 1.3em; display: flex; align-items: center;">
+                                    <span style="font-size: 1.5em; margin-right: 10px;">⚡</span>
+                                    Action Items & Recommendations
+                                </h5>
+                                
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                                    ${lowPerformers.length > 0 ? `
+                                        <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px;">
+                                            <h6 style="margin: 0 0 10px 0; font-size: 1em;">🎯 Performance Support Needed</h6>
+                                            <div style="font-size: 0.9em; line-height: 1.4;">
+                                                <strong>${lowPerformers.length} supervisors</strong> need training/support:
+                                                <div style="margin-top: 8px;">
+                                                    ${lowPerformers.slice(0, 3).map(s => `• ${s.supervisor}`).join('<br>')}
+                                                    ${lowPerformers.length > 3 ? `<br>• +${lowPerformers.length - 3} more...` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${cashOnlySupers.length > 0 ? `
+                                        <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px;">
+                                            <h6 style="margin: 0 0 10px 0; font-size: 1em;">📱 Digital Payment Training</h6>
+                                            <div style="font-size: 0.9em; line-height: 1.4;">
+                                                <strong>${cashOnlySupers.length} supervisors</strong> only collect cash:
+                                                <div style="margin-top: 8px;">
+                                                    ${cashOnlySupers.slice(0, 3).map(s => `• ${s.supervisor}`).join('<br>')}
+                                                    ${cashOnlySupers.length > 3 ? `<br>• +${cashOnlySupers.length - 3} more...` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px;">
+                                        <h6 style="margin: 0 0 10px 0; font-size: 1em;">💡 Key Insights</h6>
+                                        <div style="font-size: 0.9em; line-height: 1.4;">
+                                            • Promote digital payment adoption<br>
+                                            • Provide UPI training to supervisors<br>
+                                            • Monitor collection efficiency<br>
+                                            • Implement performance incentives
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    })()} 
+                </div>
+            `;
+
+            document.getElementById('analysisGrid').innerHTML += supervisorPaymentModeAnalysis;
+        }
+
         function generateExecutiveSummary() {
             const topPaymentMode = Object.entries(processedData.paymentModes)
                 .sort((a, b) => b[1].amount - a[1].amount)[0];
-            
+
             const lowestPaymentMode = Object.entries(processedData.paymentModes)
                 .sort((a, b) => a[1].amount - b[1].amount)[0];
-            
+
             const topZone = Object.entries(processedData.zones)
                 .sort((a, b) => b[1].amount - a[1].amount)[0];
-            
+
             const topSupervisor = Object.entries(processedData.supervisors)
                 .sort((a, b) => b[1].amount - a[1].amount)[0];
-            
+
             const lowestSupervisor = Object.entries(processedData.supervisors)
                 .sort((a, b) => a[1].amount - b[1].amount)[0];
 
             const topPropertyType = Object.entries(processedData.propertyTypes)
                 .sort((a, b) => b[1].amount - a[1].amount)[0];
-            
+
             const topPropertySubType = Object.entries(processedData.propertySubTypes)
                 .sort((a, b) => b[1].amount - a[1].amount)[0];
 
@@ -1087,4 +1338,5 @@
         console.log('UCC Revenue Analysis Dashboard initialized');
     </script>
 </body>
+
 </html>
