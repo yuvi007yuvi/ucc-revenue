@@ -269,6 +269,18 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 15px 40px rgba(233, 30, 99, 0.4); }
+            50% { box-shadow: 0 20px 50px rgba(233, 30, 99, 0.6); }
+            100% { box-shadow: 0 15px 40px rgba(233, 30, 99, 0.4); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
     </style>
 </head>
 
@@ -630,6 +642,7 @@
                         <table>
                             <thead>
                                 <tr>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px; text-align: center;">S.No.</th>
                                     <th>Payment Mode</th>
                                     <th>Count</th>
                                     <th>Amount (₹)</th>
@@ -638,13 +651,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${paymentModeData.map(item => `
+                                ${paymentModeData.map((item, index) => `
                                     <tr>
-                                        <td>${item.mode}</td>
-                                        <td>${item.count.toLocaleString('en-IN')}</td>
-                                        <td>₹${item.amount.toLocaleString('en-IN')}</td>
-                                        <td>${item.countPercent}%</td>
-                                        <td>${item.amountPercent}%</td>
+                                        <td style="font-weight: bold; color: #3498db; text-align: center; border: 1px solid #dee2e6;">${index + 1}</td>
+                                        <td style="border: 1px solid #dee2e6;">${item.mode}</td>
+                                        <td style="border: 1px solid #dee2e6;">${item.count.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #dee2e6;">₹${item.amount.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #dee2e6;">${item.countPercent}%</td>
+                                        <td style="border: 1px solid #dee2e6;">${item.amountPercent}%</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -653,60 +667,7 @@
                 </div>
             `;
 
-            // Payment mode charts
-            const chartContainer = `
-                <div class="analysis-card">
-                    <h3>📊 Payment Mode Distribution</h3>
-                    <div class="chart-container">
-                        <canvas id="paymentModeChart"></canvas>
-                    </div>
-                </div>
-            `;
-
-            analysisGrid.innerHTML = paymentModeTable + chartContainer;
-
-            // Create payment mode chart
-            setTimeout(() => {
-                const ctx = document.getElementById('paymentModeChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: paymentModeData.map(item => item.mode),
-                        datasets: [{
-                            data: paymentModeData.map(item => item.amount),
-                            backgroundColor: [
-                                '#3498db',
-                                '#e74c3c',
-                                '#2ecc71',
-                                '#f39c12',
-                                '#9b59b6',
-                                '#1abc9c'
-                            ],
-                            borderWidth: 2,
-                            borderColor: '#fff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        const value = context.parsed;
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = ((value / total) * 100).toFixed(1);
-                                        return `${context.label}: ₹${value.toLocaleString('en-IN')} (${percentage}%)`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }, 100);
+            analysisGrid.innerHTML = paymentModeTable;
         }
 
         function generateLocationAnalysis() {
@@ -722,6 +683,7 @@
                         <table>
                             <thead>
                                 <tr>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px; text-align: center;">S.No.</th>
                                     <th>Zone</th>
                                     <th>Transactions</th>
                                     <th>Total Amount (₹)</th>
@@ -729,12 +691,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${zoneData.map(zone => `
+                                ${zoneData.map((zone, index) => `
                                     <tr>
-                                        <td>Zone ${zone.zone}</td>
-                                        <td>${zone.count.toLocaleString('en-IN')}</td>
-                                        <td>₹${zone.amount.toLocaleString('en-IN')}</td>
-                                        <td>₹${(zone.amount / zone.count).toFixed(0)}</td>
+                                        <td style="font-weight: bold; color: #3498db; text-align: center; border: 1px solid #dee2e6;">${index + 1}</td>
+                                        <td style="border: 1px solid #dee2e6;">Zone ${zone.zone}</td>
+                                        <td style="border: 1px solid #dee2e6;">${zone.count.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #dee2e6;">₹${zone.amount.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #dee2e6;">₹${(zone.amount / zone.count).toFixed(0)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -777,12 +740,12 @@
 
                     ${processedData.inactiveWards.length > 0 ? `
                         <!-- Critical Alert Section -->
-                        <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(231, 76, 60, 0.3);">
+                        <div style="background: linear-gradient(135deg, #e91e63, #ad1457); color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 15px 40px rgba(233, 30, 99, 0.4); border: 3px solid #f48fb1; animation: pulse 2s infinite;">
                             <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                                <span style="font-size: 2em; margin-right: 15px;">⚠️</span>
+                                <span style="font-size: 2.5em; margin-right: 15px; animation: bounce 1s infinite;">🚨</span>
                                 <div>
-                                    <h4 style="margin: 0; font-size: 1.5em;">CRITICAL REVENUE GAP ALERT</h4>
-                                    <p style="margin: 5px 0 0 0; opacity: 0.9;">Immediate action required for revenue recovery</p>
+                                    <h4 style="margin: 0; font-size: 1.6em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">CRITICAL REVENUE GAP ALERT</h4>
+                                    <p style="margin: 5px 0 0 0; opacity: 0.95; font-size: 1.1em; font-weight: 600;">⚡ Immediate action required for revenue recovery ⚡</p>
                                 </div>
                             </div>
                             
@@ -908,6 +871,7 @@
                         <table>
                             <thead>
                                 <tr>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px; text-align: center;">S.No.</th>
                                     <th>Property Type</th>
                                     <th>Total Count</th>
                                     <th>Total Amount (₹)</th>
@@ -916,13 +880,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${propertyTypeData.map(item => `
+                                ${propertyTypeData.map((item, index) => `
                                     <tr>
-                                        <td style="font-weight: bold; color: ${item.type === 'Commercial' ? '#e67e22' : item.type === 'Residential' ? '#27ae60' : '#3498db'};">${item.type}</td>
-                                        <td>${item.count.toLocaleString('en-IN')}</td>
-                                        <td>₹${item.amount.toLocaleString('en-IN')}</td>
-                                        <td>₹${(item.amount / item.count).toFixed(0)}</td>
-                                        <td>${((item.amount / processedData.totalAmount) * 100).toFixed(1)}%</td>
+                                        <td style="font-weight: bold; color: #3498db; text-align: center; border: 1px solid #dee2e6;">${index + 1}</td>
+                                        <td style="font-weight: bold; color: ${item.type === 'Commercial' ? '#e67e22' : item.type === 'Residential' ? '#27ae60' : '#3498db'}; border: 1px solid #dee2e6;">${item.type}</td>
+                                        <td style="border: 1px solid #dee2e6;">${item.count.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #dee2e6;">₹${item.amount.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #dee2e6;">₹${(item.amount / item.count).toFixed(0)}</td>
+                                        <td style="border: 1px solid #dee2e6;">${((item.amount / processedData.totalAmount) * 100).toFixed(1)}%</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -944,12 +909,12 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>S.No.</th>
-                                    <th>Property Sub-Type</th>
-                                    <th>Count</th>
-                                    <th>Total Amount (₹)</th>
-                                    <th>Avg per Unit (₹)</th>
-                                    <th>Performance</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px; text-align: center;">S.No.</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Property Sub-Type</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Count</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Total Amount (₹)</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Avg per Unit (₹)</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Performance</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -968,12 +933,12 @@
                 }
                 return `
                                         <tr>
-                                            <td style="font-weight: bold; color: #3498db;">${index + 1}</td>
-                                            <td style="font-size: 0.9em;">${item.subType}</td>
-                                            <td>${item.count.toLocaleString('en-IN')}</td>
-                                            <td>₹${item.amount.toLocaleString('en-IN')}</td>
-                                            <td>₹${(item.amount / item.count).toFixed(0)}</td>
-                                            <td style="color: ${performanceColor}; font-weight: bold;">${performanceIcon}</td>
+                                            <td style="font-weight: bold; color: #3498db; text-align: center; border: 1px solid #dee2e6;">${index + 1}</td>
+                                            <td style="font-size: 0.9em; border: 1px solid #dee2e6;">${item.subType}</td>
+                                            <td style="border: 1px solid #dee2e6;">${item.count.toLocaleString('en-IN')}</td>
+                                            <td style="border: 1px solid #dee2e6;">₹${item.amount.toLocaleString('en-IN')}</td>
+                                            <td style="border: 1px solid #dee2e6;">₹${(item.amount / item.count).toFixed(0)}</td>
+                                            <td style="color: ${performanceColor}; font-weight: bold; border: 1px solid #dee2e6;">${performanceIcon}</td>
                                         </tr>
                                     `;
             }).join('')}
@@ -1002,12 +967,12 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>S.No.</th>
-                                    <th>Supervisor Name</th>
-                                    <th>Total Collections</th>
-                                    <th>Total Amount (₹)</th>
-                                    <th>Avg per Collection (₹)</th>
-                                    <th>Performance Rating</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px; text-align: center;">S.No.</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Supervisor Name</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Total Collections</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Total Amount (₹)</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Avg per Collection (₹)</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Performance Rating</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1027,12 +992,12 @@
 
                 return `
                                         <tr>
-                                            <td style="font-weight: bold; color: #3498db;">${index + 1}</td>
-                                            <td>${supervisor.supervisor}</td>
-                                            <td>${supervisor.count.toLocaleString('en-IN')}</td>
-                                            <td>₹${supervisor.amount.toLocaleString('en-IN')}</td>
-                                            <td>₹${supervisor.efficiency.toFixed(0)}</td>
-                                            <td style="color: ${ratingColor}; font-weight: bold;">${rating}</td>
+                                            <td style="font-weight: bold; color: #3498db; text-align: center; border: 1px solid #dee2e6;">${index + 1}</td>
+                                            <td style="border: 1px solid #dee2e6;">${supervisor.supervisor}</td>
+                                            <td style="border: 1px solid #dee2e6;">${supervisor.count.toLocaleString('en-IN')}</td>
+                                            <td style="border: 1px solid #dee2e6;">₹${supervisor.amount.toLocaleString('en-IN')}</td>
+                                            <td style="border: 1px solid #dee2e6;">₹${supervisor.efficiency.toFixed(0)}</td>
+                                            <td style="color: ${ratingColor}; font-weight: bold; border: 1px solid #dee2e6;">${rating}</td>
                                         </tr>
                                     `;
             }).join('')}
@@ -1101,61 +1066,44 @@
                     </div>
 
                     <div class="table-container" style="overflow-x: auto;">
-                        <table style="min-width: 800px;">
+                        <table style="min-width: 800px; border-collapse: collapse; border: 2px solid #34495e;">
                             <thead>
-                                <tr>
-                                    <th style="position: sticky; left: 0; background: #34495e; z-index: 10; min-width: 200px;">Supervisor Name</th>
-                                    <th>Total Amount (₹)</th>
-                                    <th>Total Count</th>
-                                    ${allPaymentModes.map(mode => `<th>${mode} Amount (₹)</th><th>${mode} Count</th>`).join('')}
-                                    <th>Efficiency Rating</th>
+                                <tr style="background: linear-gradient(135deg, #34495e, #2c3e50);">
+                                    <th style="position: sticky; left: 0; background: linear-gradient(135deg, #34495e, #2c3e50); z-index: 10; min-width: 60px; border: 1px solid #2c3e50; color: white; padding: 12px 8px; text-align: center;">S.No.</th>
+                                    <th style="position: sticky; left: 60px; background: linear-gradient(135deg, #34495e, #2c3e50); z-index: 10; min-width: 200px; border: 1px solid #2c3e50; color: white; padding: 12px 8px;">Supervisor Name</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px; text-align: center;">Total Amount (₹)</th>
+                                    <th style="border: 1px solid #2c3e50; color: white; padding: 12px 8px; text-align: center;">Total Count</th>
+                                    ${allPaymentModes.map(mode => `<th style="border: 1px solid #2c3e50; color: white; padding: 12px 6px; text-align: center; min-width: 100px;">${mode}<br>Amount (₹)</th><th style="border: 1px solid #2c3e50; color: white; padding: 12px 6px; text-align: center; min-width: 80px;">${mode}<br>Count</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
                                 ${supervisorData.map((supervisor, index) => {
-                                    // Calculate efficiency rating
-                                    let rating, ratingColor;
-                                    const avgPerTransaction = supervisor.totalAmount / supervisor.totalCount;
-                                    const overallAvg = processedData.totalAmount / processedData.totalTransactions;
-                                    
-                                    if (avgPerTransaction >= overallAvg * 1.2) {
-                                        rating = '⭐ Excellent';
-                                        ratingColor = '#27ae60';
-                                    } else if (avgPerTransaction >= overallAvg) {
-                                        rating = '✅ Good';
-                                        ratingColor = '#2ecc71';
-                                    } else if (avgPerTransaction >= overallAvg * 0.8) {
-                                        rating = '📊 Average';
-                                        ratingColor = '#f39c12';
-                                    } else {
-                                        rating = '⚠️ Needs Support';
-                                        ratingColor = '#e74c3c';
-                                    }
-
                                     // Find dominant payment mode for this supervisor
                                     const dominantMode = Object.entries(supervisor.paymentModes)
                                         .sort((a, b) => b[1].amount - a[1].amount)[0];
                                     
                                     return `
-                                        <tr style="${index % 2 === 0 ? 'background: #f8f9fa;' : ''}">
-                                            <td style="position: sticky; left: 0; background: ${index % 2 === 0 ? '#f8f9fa' : 'white'}; z-index: 5; font-weight: bold; color: #2c3e50; min-width: 200px; padding: 12px 8px;">
-                                                ${supervisor.supervisor}
+                                        <tr style="${index % 2 === 0 ? 'background: #f8f9fa;' : 'background: white;'} border-bottom: 1px solid #dee2e6;">
+                                            <td style="position: sticky; left: 0; background: ${index % 2 === 0 ? '#f8f9fa' : 'white'}; z-index: 5; font-weight: bold; color: #2c3e50; min-width: 60px; padding: 12px 8px; text-align: center; border: 1px solid #dee2e6; font-size: 1.1em;">
+                                                ${index + 1}
+                                            </td>
+                                            <td style="position: sticky; left: 60px; background: ${index % 2 === 0 ? '#f8f9fa' : 'white'}; z-index: 5; font-weight: bold; color: #2c3e50; min-width: 200px; padding: 12px 8px; border: 1px solid #dee2e6;">
+                                                <div style="font-size: 1em; margin-bottom: 4px;">${supervisor.supervisor}</div>
                                                 <div style="font-size: 0.8em; color: #7f8c8d; margin-top: 4px;">
                                                     Prefers: <strong style="color: #3498db;">${dominantMode ? dominantMode[0] : 'N/A'}</strong>
                                                     ${dominantMode ? `(₹${dominantMode[1].amount.toLocaleString('en-IN')})` : ''}
                                                 </div>
                                             </td>
-                                            <td style="font-weight: bold; color: #27ae60;">₹${supervisor.totalAmount.toLocaleString('en-IN')}</td>
-                                            <td style="font-weight: bold; color: #3498db;">${supervisor.totalCount.toLocaleString('en-IN')}</td>
+                                            <td style="font-weight: bold; color: #27ae60; text-align: center; padding: 12px 8px; border: 1px solid #dee2e6;">₹${supervisor.totalAmount.toLocaleString('en-IN')}</td>
+                                            <td style="font-weight: bold; color: #3498db; text-align: center; padding: 12px 8px; border: 1px solid #dee2e6;">${supervisor.totalCount.toLocaleString('en-IN')}</td>
                                             ${allPaymentModes.map(mode => {
                                                 const modeData = supervisor.paymentModes[mode] || { amount: 0, count: 0 };
                                                 const isTop = dominantMode && dominantMode[0] === mode;
                                                 return `
-                                                    <td style="${isTop ? 'background: #e8f5e8; font-weight: bold;' : ''}">₹${modeData.amount.toLocaleString('en-IN')}</td>
-                                                    <td style="${isTop ? 'background: #e8f5e8; font-weight: bold;' : ''}">${modeData.count.toLocaleString('en-IN')}</td>
+                                                    <td style="${isTop ? 'background: #e8f5e8; font-weight: bold;' : ''} text-align: center; padding: 12px 6px; border: 1px solid #dee2e6; ${modeData.amount > 0 ? 'color: #27ae60;' : 'color: #95a5a6;'}">₹${modeData.amount.toLocaleString('en-IN')}</td>
+                                                    <td style="${isTop ? 'background: #e8f5e8; font-weight: bold;' : ''} text-align: center; padding: 12px 6px; border: 1px solid #dee2e6; ${modeData.count > 0 ? 'color: #3498db;' : 'color: #95a5a6;'}">${modeData.count.toLocaleString('en-IN')}</td>
                                                 `;
                                             }).join('')}
-                                            <td style="color: ${ratingColor}; font-weight: bold; text-align: center;">${rating}</td>
                                         </tr>
                                     `;
                                 }).join('')}
